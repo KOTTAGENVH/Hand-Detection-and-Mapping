@@ -111,7 +111,7 @@ const HandTracking: React.FC = () => {
 
       <Webcam
         ref={webcamRef}
-        videoConstraints={{ deviceId: selectedCamera }}
+        videoConstraints={selectedCamera ? { deviceId: selectedCamera } : {}}
         style={{
           position: 'absolute',
           marginLeft: 'auto',
