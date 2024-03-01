@@ -1,25 +1,30 @@
-from flask import Flask, request, jsonify, render_template
 import cv2
 import mediapipe as mp
-import numpy as np
-import base64
 import time
-
-app = Flask(__name__)
+import numpy as np
 
 mp_hand = mp.solutions.hands
+
+# Initialize MediaPipe Hands with maximum num_hands parameter set to 1.
 hands = mp_hand.Hands(max_num_hands=1, min_detection_confidence=0.5, min_tracking_confidence=0.5)
+
 mp_drawings = mp.solutions.drawing_utils
 
-@app.route('/hand-detector')
-def index():
-    return render_template('index.html')
+mp_drawing_styles = mp.solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2)
 
-@app.route('/hand_detection', methods=['POST'])
-def hand_detection():
-    img_data = request.files['image'].read()
-    nparr = np.frombuffer(img_data, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+cap = cv2.VideoCapture(1) # Change based on your camera (0 or 1 or 2 or ...)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set width
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set height
+
+prev_time = 0
+
+while True:
+
+    success, img = cap.read()
+
+    if not success:
+        print("Ignoring empty camera frame.")
+        continue
 
     results = hands.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
@@ -69,7 +74,6 @@ def hand_detection():
             else:
                 cv2.putText(img, "Issue: Your fingers are not close", (10, 200), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
 
-    # FPS calculation
     cur_time = time.time()
     FPS = int(1 / (cur_time - prev_time))
     prev_time = cur_time
@@ -79,12 +83,8 @@ def hand_detection():
 
     cv2.putText(img, f'FPS: {FPS}', (10, 170), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2)
 
-    # Convert image to base64 string
-    _, buffer = cv2.imencode('.jpg', img)
-    img_str = base64.b64encode(buffer).decode('utf-8')
-    
-    return jsonify({'image': img_str})
+    cv2.imshow("Hand Detection", img)
+    cv2.waitKey(1)
 
-if __name__ == '__main__':
-    prev_time = time.time()  # Initialize prev_time
-    app.run(debug=True)
+cap.release()
+cv2.destroyAllWindows()
