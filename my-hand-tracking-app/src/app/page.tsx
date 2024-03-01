@@ -69,25 +69,43 @@ const HandTracking: React.FC = () => {
           ctx.arc(x, y, 5, 0, 2 * Math.PI);
           ctx.fillStyle = "green";
           ctx.fill();
-
-          // Draw lines connecting landmarks
-          if (i > 0) {
-            const prevX = prediction.landmarks[i - 1][0];
-            const prevY = prediction.landmarks[i - 1][1];
-            ctx.beginPath();
-            ctx.moveTo(prevX, prevY);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-          }
         }
+        // Connect landmarks to draw fingers
+        ctx.beginPath();
+        ctx.moveTo(prediction.landmarks[0][0], prediction.landmarks[0][1]);
+        for (let i = 1; i < prediction.landmarks.length; i++) {
+          const x = prediction.landmarks[i][0];
+          const y = prediction.landmarks[i][1];
+          ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.stroke();
       });
     }
   };
 
   const handleCameraChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCamera(event.target.value);
+  };
+
+  const capturePhoto = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = webcamRef?.current!.video.videoWidth;
+    canvas.height = webcamRef?.current!.video.videoHeight;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(
+      webcamRef?.current!.video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    const dataURL = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataURL;
+    a.download = "photo.png";
+    a.click();
   };
 
   useEffect(() => {
@@ -107,7 +125,7 @@ const HandTracking: React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <select
         value={selectedCamera || ""}
         onChange={handleCameraChange}
@@ -117,6 +135,8 @@ const HandTracking: React.FC = () => {
           padding: "10px",
           borderRadius: "10px",
           margin: "10px",
+          position: "absolute",
+          zIndex: 10,
         }}
       >
         {cameras.map((camera) => (
@@ -126,41 +146,42 @@ const HandTracking: React.FC = () => {
         ))}
       </select>
 
+      <div style={{ position: "relative", width: canvasDimensions.width, height: canvasDimensions.height, justifyContent: "center", alignContent: "center", minWidth: "100%" }}>
       <Webcam
         ref={webcamRef}
         videoConstraints={selectedCamera ? { deviceId: selectedCamera } : {}}
         style={{
           position: "absolute",
-          marginLeft: "auto",
-          marginRight: "auto",
-
           left: 0,
-          right: 0,
-          textAlign: "center",
-          zIndex: 9,
-          width: canvasDimensions.width,
-          height: canvasDimensions.height,
+          top: 0,
+          width: "100%",
+          height: "100%",
         }}
       />
       <canvas
         ref={canvasRef}
         style={{
           position: "absolute",
-          marginLeft: "auto",
-          marginRight: "auto",
           left: 0,
-          right: 0,
-          textAlign: "center",
-          zIndex: 9,
-          width: canvasDimensions.width,
-          height: canvasDimensions.height,
+          top: 0,
+          width: "100%",
+          height: "100%",
         }}
       />
-       <p
-       style={{
-        justifyContent: "center",
-       }}
-       >{handStatus}</p>
+      <button
+        onClick={capturePhoto}
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+        }}
+      >
+        Capture Photo
+      </button>
+    </div>
+      <p>{handStatus}</p>
     </div>
   );
 };
