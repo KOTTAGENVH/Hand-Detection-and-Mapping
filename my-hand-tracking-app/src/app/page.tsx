@@ -39,7 +39,7 @@ const HandTracking: React.FC = () => {
     if (
       typeof webcamRef.current !== 'undefined' &&
       webcamRef.current !== null &&
-      webcamRef.current.video.readyState === 4
+      webcamRef?.current?.video?.readyState === 4
     ) {
       const video = webcamRef.current.video as HTMLVideoElement;
       const videoWidth = video.videoWidth;
