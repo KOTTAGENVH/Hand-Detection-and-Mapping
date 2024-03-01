@@ -1,6 +1,4 @@
 "use client";
-// use client
-// components/HandTracking.tsx
 import React, { useRef, useEffect, useState } from "react";
 import * as handpose from "@tensorflow-models/handpose";
 import Webcam from "react-webcam";
@@ -12,6 +10,8 @@ const HandTracking: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
+  const [canvasDimensions, setCanvasDimensions] = useState({ width: 0, height: 0 });
+  const [handStatus, setHandStatus] = useState("");
 
   useEffect(() => {
     const runHandpose = async () => {
@@ -34,7 +34,7 @@ const HandTracking: React.FC = () => {
 
     runHandpose();
   }, []);
-let handStatus = "";
+
   const detect = async (net: handpose.HandPose) => {
     if (
       typeof webcamRef.current !== "undefined" &&
@@ -53,9 +53,9 @@ let handStatus = "";
 
       const hand = await net.estimateHands(video);
       if (hand.length === 0) {
-        handStatus = "Hand not detected";
+        setHandStatus("Hand not detected");
       } else {
-        handStatus = "Hand detected";
+        setHandStatus("Hand detected");
       }
       // Draw landmarks
       const ctx = canvasRef.current!.getContext("2d")!;
@@ -90,6 +90,22 @@ let handStatus = "";
     setSelectedCamera(event.target.value);
   };
 
+  useEffect(() => {
+    const updateCanvasDimensions = () => {
+      if (window.innerWidth < 640 || window.innerHeight < 480) {
+        setCanvasDimensions({ width: window.innerWidth, height: window.innerHeight });
+      } else {
+        setCanvasDimensions({ width: 640, height: 480 });
+      }
+    };
+
+    updateCanvasDimensions();
+    window.addEventListener("resize", updateCanvasDimensions);
+    return () => {
+      window.removeEventListener("resize", updateCanvasDimensions);
+    };
+  }, []);
+
   return (
     <div>
       <select
@@ -122,8 +138,8 @@ let handStatus = "";
           right: 0,
           textAlign: "center",
           zIndex: 9,
-          width: 640,
-          height: 480,
+          width: canvasDimensions.width,
+          height: canvasDimensions.height,
         }}
       />
       <canvas
@@ -136,11 +152,15 @@ let handStatus = "";
           right: 0,
           textAlign: "center",
           zIndex: 9,
-          width: 640,
-          height: 480,
+          width: canvasDimensions.width,
+          height: canvasDimensions.height,
         }}
       />
-       <p>{handStatus}</p>
+       <p
+       style={{
+        justifyContent: "center",
+       }}
+       >{handStatus}</p>
     </div>
   );
 };
