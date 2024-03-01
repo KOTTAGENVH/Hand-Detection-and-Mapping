@@ -145,45 +145,46 @@ const HandTracking: React.FC = () => {
           </option>
         ))}
       </select>
-
-      <div style={{ position: "relative", width: canvasDimensions.width, height: canvasDimensions.height, justifyContent: "center", alignContent: "center", minWidth: "100%" }}>
-      <Webcam
-        ref={webcamRef}
-        videoConstraints={selectedCamera ? { deviceId: selectedCamera } : {}}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: "100%",
-          height: "100%",
-        }}
-      />
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: "100%",
-          height: "100%",
-        }}
-      />
-      <button
-        onClick={capturePhoto}
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-        }}
-      >
-        Capture Photo
-      </button>
-    </div>
+  
+      <div style={{ position: "relative", width: canvasDimensions.width, height: canvasDimensions.height }}>
+        <Webcam
+          ref={webcamRef}
+          videoConstraints={selectedCamera ? { deviceId: selectedCamera } : {}}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        />
+        <button
+          onClick={capturePhoto}
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 10,
+          }}
+        >
+          Capture Photo
+        </button>
+      </div>
       <p>{handStatus}</p>
     </div>
   );
+  
 };
 
 export default HandTracking;
