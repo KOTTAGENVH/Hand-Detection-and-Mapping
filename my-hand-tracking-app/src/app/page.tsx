@@ -1,16 +1,17 @@
 'use client'
-// components/HandTracking.js
+// use client
+// components/HandTracking.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import * as handpose from '@tensorflow-models/handpose';
 import Webcam from 'react-webcam';
 import * as tf from '@tensorflow/tfjs';
 import { ToastContainer, toast } from 'react-toastify';
 
-const HandTracking = () => {
-  const webcamRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [cameras, setCameras] = useState([]);
-  const [selectedCamera, setSelectedCamera] = useState(null);
+const HandTracking: React.FC = () => {
+  const webcamRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
 
   useEffect(() => {
     const runHandpose = async () => {
@@ -24,7 +25,7 @@ const HandTracking = () => {
         (device) => device.kind === 'videoinput'
       );
       setCameras(videoDevices);
-      setSelectedCamera(videoDevices[0].deviceId);
+      setSelectedCamera(videoDevices[0]?.deviceId || null);
 
       setInterval(() => {
         detect(net);
@@ -34,29 +35,29 @@ const HandTracking = () => {
     runHandpose();
   }, []);
 
-  const detect = async (net) => {
+  const detect = async (net: handpose.HandPose) => {
     if (
       typeof webcamRef.current !== 'undefined' &&
       webcamRef.current !== null &&
       webcamRef.current.video.readyState === 4
     ) {
-      const video = webcamRef.current.video;
-      const videoWidth = webcamRef.current.video.videoWidth;
-      const videoHeight = webcamRef.current.video.videoHeight;
+      const video = webcamRef.current.video as HTMLVideoElement;
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
 
-      webcamRef.current.video.width = videoWidth;
-      webcamRef.current.video.height = videoHeight;
+      video.width = videoWidth;
+      video.height = videoHeight;
 
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
+      canvasRef.current!.width = videoWidth;
+      canvasRef.current!.height = videoHeight;
 
       const hand = await net.estimateHands(video);
-      if(hand.length === 0) {
+      if (hand.length === 0) {
         alert('No hand detected');
       }
 
       // Draw landmarks
-      const ctx = canvasRef.current.getContext('2d');
+      const ctx = canvasRef.current!.getContext('2d')!;
       ctx.clearRect(0, 0, videoWidth, videoHeight);
       hand.forEach((prediction) => {
         for (let i = 0; i < prediction.landmarks.length; i++) {
@@ -84,22 +85,22 @@ const HandTracking = () => {
     }
   };
 
-  const handleCameraChange = (event) => {
+  const handleCameraChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCamera(event.target.value);
   };
 
   return (
     <div>
-      <select 
-      value={selectedCamera} 
-      onChange={handleCameraChange}
-      style={{
-        backgroundColor: 'white',
-        color: 'black',
-        padding: '10px',
-        borderRadius: '10px',
-        margin: '10px',
-      }}
+      <select
+        value={selectedCamera || ''}
+        onChange={handleCameraChange}
+        style={{
+          backgroundColor: 'white',
+          color: 'black',
+          padding: '10px',
+          borderRadius: '10px',
+          margin: '10px',
+        }}
       >
         {cameras.map((camera) => (
           <option key={camera.deviceId} value={camera.deviceId}>
