@@ -90,24 +90,24 @@ const HandTracking: React.FC = () => {
   };
 
   const capturePhoto = () => {
+    const video = webcamRef.current?.video;
+    if (!video) return; // Check if video element exists
+  
     const canvas = document.createElement("canvas");
-    canvas.width = webcamRef?.current!.video.videoWidth;
-    canvas.height = webcamRef?.current!.video.videoHeight;
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(
-      webcamRef?.current!.video,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    canvas.width = video.videoWidth || 0; // Use fallback value if videoWidth is null
+    canvas.height = video.videoHeight || 0; // Use fallback value if videoHeight is null
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return; // Check if getContext returns null
+  
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
     const dataURL = canvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = dataURL;
     a.download = "photo.png";
     a.click();
   };
-
+  
   useEffect(() => {
     const updateCanvasDimensions = () => {
       if (window.innerWidth < 640 || window.innerHeight < 480) {
