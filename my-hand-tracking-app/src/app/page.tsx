@@ -1,11 +1,11 @@
-'use client'
+"use client";
 // use client
 // components/HandTracking.tsx
-import React, { useRef, useEffect, useState } from 'react';
-import * as handpose from '@tensorflow-models/handpose';
-import Webcam from 'react-webcam';
-import * as tf from '@tensorflow/tfjs';
-import { ToastContainer, toast } from 'react-toastify';
+import React, { useRef, useEffect, useState } from "react";
+import * as handpose from "@tensorflow-models/handpose";
+import Webcam from "react-webcam";
+import * as tf from "@tensorflow/tfjs";
+import { ToastContainer, toast } from "react-toastify";
 
 const HandTracking: React.FC = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -15,14 +15,14 @@ const HandTracking: React.FC = () => {
 
   useEffect(() => {
     const runHandpose = async () => {
-      await tf.setBackend('webgl'); // Set backend to WebGL for GPU acceleration
+      await tf.setBackend("webgl"); // Set backend to WebGL for GPU acceleration
       const net = await handpose.load();
-      console.log('Handpose model loaded');
+      console.log("Handpose model loaded");
 
       // Fetch available cameras
       const availableCameras = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = availableCameras.filter(
-        (device) => device.kind === 'videoinput'
+        (device) => device.kind === "videoinput"
       );
       setCameras(videoDevices);
       setSelectedCamera(videoDevices[0]?.deviceId || null);
@@ -34,10 +34,10 @@ const HandTracking: React.FC = () => {
 
     runHandpose();
   }, []);
-
+let handStatus = "";
   const detect = async (net: handpose.HandPose) => {
     if (
-      typeof webcamRef.current !== 'undefined' &&
+      typeof webcamRef.current !== "undefined" &&
       webcamRef.current !== null &&
       webcamRef?.current?.video?.readyState === 4
     ) {
@@ -53,11 +53,12 @@ const HandTracking: React.FC = () => {
 
       const hand = await net.estimateHands(video);
       if (hand.length === 0) {
-        alert('No hand detected');
+        handStatus = "Hand not detected";
+      } else {
+        handStatus = "Hand detected";
       }
-
       // Draw landmarks
-      const ctx = canvasRef.current!.getContext('2d')!;
+      const ctx = canvasRef.current!.getContext("2d")!;
       ctx.clearRect(0, 0, videoWidth, videoHeight);
       hand.forEach((prediction) => {
         for (let i = 0; i < prediction.landmarks.length; i++) {
@@ -66,7 +67,7 @@ const HandTracking: React.FC = () => {
 
           ctx.beginPath();
           ctx.arc(x, y, 5, 0, 2 * Math.PI);
-          ctx.fillStyle = 'green';
+          ctx.fillStyle = "green";
           ctx.fill();
 
           // Draw lines connecting landmarks
@@ -76,7 +77,7 @@ const HandTracking: React.FC = () => {
             ctx.beginPath();
             ctx.moveTo(prevX, prevY);
             ctx.lineTo(x, y);
-            ctx.strokeStyle = 'red';
+            ctx.strokeStyle = "red";
             ctx.lineWidth = 2;
             ctx.stroke();
           }
@@ -92,14 +93,14 @@ const HandTracking: React.FC = () => {
   return (
     <div>
       <select
-        value={selectedCamera || ''}
+        value={selectedCamera || ""}
         onChange={handleCameraChange}
         style={{
-          backgroundColor: 'white',
-          color: 'black',
-          padding: '10px',
-          borderRadius: '10px',
-          margin: '10px',
+          backgroundColor: "white",
+          color: "black",
+          padding: "10px",
+          borderRadius: "10px",
+          margin: "10px",
         }}
       >
         {cameras.map((camera) => (
@@ -113,13 +114,13 @@ const HandTracking: React.FC = () => {
         ref={webcamRef}
         videoConstraints={selectedCamera ? { deviceId: selectedCamera } : {}}
         style={{
-          position: 'absolute',
-          marginLeft: 'auto',
-          marginRight: 'auto',
+          position: "absolute",
+          marginLeft: "auto",
+          marginRight: "auto",
 
           left: 0,
           right: 0,
-          textAlign: 'center',
+          textAlign: "center",
           zIndex: 9,
           width: 640,
           height: 480,
@@ -128,17 +129,18 @@ const HandTracking: React.FC = () => {
       <canvas
         ref={canvasRef}
         style={{
-          position: 'absolute',
-          marginLeft: 'auto',
-          marginRight: 'auto',
+          position: "absolute",
+          marginLeft: "auto",
+          marginRight: "auto",
           left: 0,
           right: 0,
-          textAlign: 'center',
+          textAlign: "center",
           zIndex: 9,
           width: 640,
           height: 480,
         }}
       />
+       <p>{handStatus}</p>
     </div>
   );
 };
