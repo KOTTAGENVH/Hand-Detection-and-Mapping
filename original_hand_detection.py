@@ -12,7 +12,7 @@ mp_drawings = mp.solutions.drawing_utils
 
 mp_drawing_styles = mp.solutions.drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2)
 
-cap = cv2.VideoCapture(1) # Change based on your camera (0 or 1 or 2 or ...)
+cap = cv2.VideoCapture(0) # Change based on your camera (0 or 1 or 2 or ...)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set width
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set height
 
